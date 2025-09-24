@@ -29,8 +29,6 @@ def my_owned_games():
     
     games = get_owned_games(key, id)
 
-    print(games)
-
     os.makedirs("data", exist_ok=True)
     with open("data/owned_games.json", "w") as owned:
         json.dump(games, owned, ensure_ascii=False, indent=3)

@@ -34,6 +34,7 @@ def get_steam_json(id: str | None = None, path_to_json = None):
             continue
 
         name = decoded_list.get("name")
+        name = f"{name}".strip()
         added = decoded_list.get("added", [])
 
         if name:
@@ -44,23 +45,33 @@ def get_steam_json(id: str | None = None, path_to_json = None):
 
 def invert_collections(collections_dict):
     inverted_dict = {}
+    all_groups = []
 
     for key in collections_dict:
+        all_groups.append(key.strip())
         for id in collections_dict[key]:
             if id in inverted_dict:
-                inverted_dict[id].append(key)
+                inverted_dict[id].append(key.strip())
             else:
                 inverted_dict[id] = [key]
     
-    return inverted_dict
+    return inverted_dict, all_groups
 
 
 
 load_dotenv()
     
 collections_dict = get_steam_json(id = os.getenv("STEAM_ID3_NUM"))
+invert_dict, all_groups = invert_collections(collections_dict)
 
-print(invert_collections(collections_dict))
+with open("data/ids_with_collections.json", "w") as id:
+        json.dump(invert_dict, id, ensure_ascii=False, indent=3)
+
+with open("data/all_collections.json", "w") as collections:
+        json.dump(all_groups, collections, ensure_ascii=False, indent=3)
+
+with open("data/collections_lists.json", "w") as lists:
+        json.dump(collections_dict, lists, ensure_ascii=False, indent=3)
 
 
     
