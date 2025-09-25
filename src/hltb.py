@@ -1,4 +1,3 @@
-import json
 from howlongtobeatpy import HowLongToBeat
 
 def game_add_hltb(game_dict):
