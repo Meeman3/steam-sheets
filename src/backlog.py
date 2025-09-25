@@ -1,4 +1,5 @@
 import json
+from hltb import game_add_hltb
 
 def get_backlog_ids(*args):
     backlog_ids = []
@@ -30,7 +31,9 @@ def backlog_ids_to_dicts(backlog_ids):
     for id in backlog_ids:
         for dict in owned_json:
             if id == dict["appid"]:
+                dict = game_add_hltb(dict)
                 backlog_games_dicts.append(dict)
+                
             
     with open("data/backlog_games.json", "w") as back:
         json.dump(backlog_games_dicts, back, ensure_ascii=False, indent=3)
