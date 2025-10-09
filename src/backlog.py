@@ -1,5 +1,5 @@
 import json
-from hltb import game_add_hltb
+from src.hltb import game_add_hltb
 
 def get_backlog_ids(*args):
     backlog_ids = []

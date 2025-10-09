@@ -8,7 +8,7 @@ import json
 
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 load_dotenv()
-backlog_id = os.getenv("BACKLOG_ID")
+played_id = os.getenv("PLAYED_ID")
 
 def get_creds():
     creds = None
@@ -27,50 +27,52 @@ def get_creds():
 creds = get_creds()
 sheet = build("sheets", "v4", credentials=creds).spreadsheets()
 
-def write_backlog(game_dict, read_values):
+def write_played(game_dict, read_values):
 
     if read_values == []:
         sheet.values().update(
-            spreadsheetId=f"{backlog_id}",
+            spreadsheetId=f"{played_id}",
             range=f"Sheet1!A1:E1",
             valueInputOption="RAW",
-            body={"values": [["Game", "Anticipation", "HLTB?", "Owned?", "Status"]]},
+            body={"values": [["Game", "Completed?",	"Play Time", "Play Period?", "Rating", "Date Finished", "100%?", "Thoughts?"]]},
         ).execute()
 
-        read_values = [["Game", "Anticipation", "HLTB?", "Owned?", "Status"]]
+        read_values = [["Game", "Completed?", "Play Time", "Play Period?", "Rating", "Date Finished", "100%?", "Thoughts?"]]
     
     if game_dict == None:
         return
     else:
+
         game_name = game_dict.get("name").strip()
         stripped_name = game_name.lower()
+        playtime = (game_dict["playtime_windows_forever"] 
+        + game_dict["playtime_mac_forever"] 
+        + game_dict["playtime_linux_forever"] 
+        + game_dict["playtime_deck_forever"])/60
         
         with open("data/ids_with_collections.json") as idc:
             collections_json = json.load(idc)
         
         game_collections = collections_json.get(f"{game_dict['appid']}")
+            
+        completed_game = "No"
+        p100 = "No"
         
-        status = "N/A"
         if game_collections:
             if "multiplayer" in game_collections:
                 if "completed" not in game_collections:
-                    status = "Multiplayer"
+                    completed_game = "Multiplayer"
+                    p100 = "N/A"
                     
             if "Dropped" in game_collections:
-                status = "Dropped"
+                completed_game = "Dropped"
                 
             if "completed" in game_collections:
-                status = "Completed"
+                completed_game = "Yes"
                 
             if "100%" in game_collections:
-                status = "Completed"
-
-        game_body = [game_name,
-                    "N/A",
-                    game_dict['hltb'],
-                    "Yes",
-                    status]
-        
+                p100 = "Yes"
+                
         
         duplicate = None
         for i, row in enumerate(read_values, start=1):
@@ -79,14 +81,31 @@ def write_backlog(game_dict, read_values):
             if cell == stripped_name:
                 duplicate = i
                 break
+    
+        game_body = [game_name,
+                    completed_game,
+                    round(playtime, 2),
+                    "N/A",
+                    "N/A",
+                    "N/A",
+                    p100]
+        
+        game_body_str = [game_name,
+                    completed_game,
+                    str(round(playtime, 2)),
+                    "N/A",
+                    "N/A",
+                    "N/A",
+                    p100]
+    
 
         if duplicate is not None:
-            if game_body in read_values:
+            if game_body_str in read_values:
                 return
             else:
                 sheet.values().update(
-                    spreadsheetId=f"{backlog_id}",
-                    range=f"Sheet1!A{duplicate}:E{duplicate}",
+                    spreadsheetId=f"{played_id}",
+                    range=f"Sheet1!A{duplicate}:G{duplicate}",
                     valueInputOption="RAW",
                     body={"values": [game_body]},
                 ).execute()
@@ -95,8 +114,8 @@ def write_backlog(game_dict, read_values):
 
         else:
             sheet.values().append(
-                spreadsheetId=f"{backlog_id}",
-                range=f"Sheet1!A:E",
+                spreadsheetId=f"{played_id}",
+                range="Sheet1!A:E",
                 valueInputOption="RAW",
                 insertDataOption="INSERT_ROWS",
                 body={"values": [game_body]},
@@ -104,17 +123,18 @@ def write_backlog(game_dict, read_values):
             return
 
 
-def read_backlog():
+def read_played():
     resp = sheet.values().get(
-        spreadsheetId=f"{backlog_id}",
+        spreadsheetId=f"{played_id}",
         range="Sheet1",
     ).execute()
     return resp
 
 
-with open("data/backlog_games.json", "r") as backlog:
-            backlog_json = json.load(backlog)
-
-values = read_backlog().get("values", [])
-for game_dict in backlog_json:
-    write_backlog(game_dict, read_values=values)
+with open("data/played.json", "r") as played:
+            played_json = json.load(played)
+            
+values = read_played().get("values", [])
+for game_dict in played_json:
+    write_played(game_dict, read_values=values)
+    
