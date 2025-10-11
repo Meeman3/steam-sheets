@@ -107,7 +107,7 @@ def write_backlog(game_dict, read_values):
 def read_backlog():
     resp = sheet.values().get(
         spreadsheetId=f"{backlog_id}",
-        range="Sheet1",
+        range="Sheet1!A:D",
     ).execute()
     return resp
 

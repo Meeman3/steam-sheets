@@ -1,5 +1,5 @@
 /.venv/
 .env
 data/*.json
-/__pychache__
+src/__pychache__
 creds/

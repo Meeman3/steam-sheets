@@ -16,6 +16,7 @@ def get_owned_games(steam_key: str, steam_id: str, include_appinfo = True, inclu
 
     data = get_info.json().get("response", {})
     game_dicts = data.get("games", [])
+    
 
     return game_dicts
 
@@ -32,3 +33,7 @@ def my_owned_games():
     os.makedirs("data", exist_ok=True)
     with open("data/owned_games.json", "w") as owned:
         json.dump(games, owned, ensure_ascii=False, indent=3)
+        
+        
+
+my_owned_games()   

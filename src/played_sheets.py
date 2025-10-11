@@ -85,27 +85,18 @@ def write_played(game_dict, read_values):
         game_body = [game_name,
                     completed_game,
                     round(playtime, 2),
-                    "N/A",
-                    "N/A",
-                    "N/A",
                     p100]
         
-        game_body_str = [game_name,
-                    completed_game,
-                    str(round(playtime, 2)),
-                    "N/A",
-                    "N/A",
-                    "N/A",
-                    p100]
+        game_body_str = f"['{game_name}', '{completed_game}', '{round(playtime, 2)}', '{p100}'"
     
 
         if duplicate is not None:
-            if game_body_str in read_values:
+            if game_body_str in str(read_values):
                 return
             else:
                 sheet.values().update(
                     spreadsheetId=f"{played_id}",
-                    range=f"Sheet1!A{duplicate}:G{duplicate}",
+                    range=f"Sheet1!A{duplicate}:D{duplicate}",
                     valueInputOption="RAW",
                     body={"values": [game_body]},
                 ).execute()
@@ -115,12 +106,12 @@ def write_played(game_dict, read_values):
         else:
             sheet.values().append(
                 spreadsheetId=f"{played_id}",
-                range="Sheet1!A:E",
+                range="Sheet1!A:D",
                 valueInputOption="RAW",
                 insertDataOption="INSERT_ROWS",
                 body={"values": [game_body]},
             ).execute()
-            return
+        return
 
 
 def read_played():
@@ -138,3 +129,6 @@ values = read_played().get("values", [])
 for game_dict in played_json:
     write_played(game_dict, read_values=values)
     
+    
+#['Half-Life 2', 'Yes', '13.93', 'No'
+#['Half-Life 2', 'Yes', '13.93', 'No', 'N/A', 'N/A', 'N/A']
